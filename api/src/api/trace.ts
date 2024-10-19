@@ -65,11 +65,13 @@ export class TraceAPI {
    *
    * @returns true if the tracer provider was successfully registered, else false
    */
-  public setGlobalTracerProvider(provider: TracerProvider): boolean {
+  public setGlobalTracerProvider(provider: TracerProvider, service: string | undefined): boolean {
     const success = registerGlobal(
       API_NAME,
       this._proxyTracerProvider,
-      DiagAPI.instance()
+      DiagAPI.instance(),
+      false,
+      service,
     );
     if (success) {
       this._proxyTracerProvider.setDelegate(provider);

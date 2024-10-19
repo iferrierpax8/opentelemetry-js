@@ -27,6 +27,7 @@ const major = VERSION.split('.')[0];
 const GLOBAL_OPENTELEMETRY_API_KEY = Symbol.for(
   `opentelemetry.js.api.${major}`
 );
+let SCOPED_OPENTELEMETRY_API_KEY;
 
 const _global = _globalThis as OTelGlobal;
 
@@ -34,7 +35,8 @@ export function registerGlobal<Type extends keyof OTelGlobalAPI>(
   type: Type,
   instance: OTelGlobalAPI[Type],
   diag: DiagLogger,
-  allowOverride = false
+  allowOverride = false,
+  service?: string
 ): boolean {
   const api = (_global[GLOBAL_OPENTELEMETRY_API_KEY] = _global[
     GLOBAL_OPENTELEMETRY_API_KEY
@@ -42,7 +44,7 @@ export function registerGlobal<Type extends keyof OTelGlobalAPI>(
     version: VERSION,
   });
 
-  if (!allowOverride && api[type]) {
+  if (!allowOverride && api[type] && !service) {
     // already registered an API of this type
     const err = new Error(
       `@opentelemetry/api: Attempted duplicate registration of API: ${type}`
@@ -58,6 +60,16 @@ export function registerGlobal<Type extends keyof OTelGlobalAPI>(
     );
     diag.error(err.stack || err.message);
     return false;
+  }
+
+  if (service) {
+    SCOPED_OPENTELEMETRY_API_KEY = Symbol.for(
+      `opentelemetry.js.api.${major}.${service}`
+    );
+    _global[SCOPED_OPENTELEMETRY_API_KEY] = api;
+    diag.debug(
+      `@opentelemetry/api: Registered a scoped api for ${type} v${VERSION} with service ${service}.`
+    );
   }
 
   api[type] = instance;
@@ -91,6 +103,7 @@ export function unregisterGlobal(type: keyof OTelGlobalAPI, diag: DiagLogger) {
 
 type OTelGlobal = {
   [GLOBAL_OPENTELEMETRY_API_KEY]?: OTelGlobalAPI;
+  [key: symbol]: OTelGlobalAPI | unknown;
 };
 
 type OTelGlobalAPI = {

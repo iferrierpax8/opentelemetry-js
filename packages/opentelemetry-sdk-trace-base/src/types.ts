@@ -48,6 +48,12 @@ export interface TracerConfig {
    * The default value is 30000ms
    */
   forceFlushTimeoutMillis?: number;
+
+  /**
+   * For applications needing multiple tracer providers, this field is used to
+   * scope the provider to a single service. Example use case: Microfrontends.
+   */
+  service?: string;
 }
 
 /**

@@ -72,6 +72,7 @@ export class BasicTracerProvider implements TracerProvider {
 
   activeSpanProcessor: SpanProcessor;
   readonly resource: IResource;
+  readonly service?: string;
 
   constructor(config: TracerConfig = {}) {
     const mergedConfig = merge(
@@ -84,6 +85,7 @@ export class BasicTracerProvider implements TracerProvider {
     this._config = Object.assign({}, mergedConfig, {
       resource: this.resource,
     });
+    this.service = config.service;
 
     const defaultExporter = this._buildExporterFromEnv();
     if (defaultExporter !== undefined) {
@@ -150,7 +152,7 @@ export class BasicTracerProvider implements TracerProvider {
    * @param config Configuration object for SDK registration
    */
   register(config: SDKRegistrationConfig = {}): void {
-    trace.setGlobalTracerProvider(this);
+    trace.setGlobalTracerProvider(this, this.service);
     if (config.propagator === undefined) {
       config.propagator = this._buildPropagatorFromEnv();
     }

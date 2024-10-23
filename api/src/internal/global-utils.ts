@@ -25,7 +25,7 @@ import { isCompatible } from './semver';
 
 const major = VERSION.split('.')[0];
 const GLOBAL_OPENTELEMETRY_API_KEY = Symbol.for(
-  `opentelemetry.js.api.${major}`
+  `opentelemetry.js.api.${major}.instance.${self.crypto.randomUUID()}`
 );
 
 const _global = _globalThis as OTelGlobal;
@@ -34,7 +34,7 @@ export function registerGlobal<Type extends keyof OTelGlobalAPI>(
   type: Type,
   instance: OTelGlobalAPI[Type],
   diag: DiagLogger,
-  allowOverride = false
+  allowOverride = true
 ): boolean {
   const api = (_global[GLOBAL_OPENTELEMETRY_API_KEY] = _global[
     GLOBAL_OPENTELEMETRY_API_KEY

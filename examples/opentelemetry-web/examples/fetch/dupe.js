@@ -52,9 +52,10 @@ const getData = (url) => fetch(url, {
 const prepareClickEvent = () => {
   const url = 'https://httpbin.org/get';
 
-  const element = document.getElementById('button1');
+  const element = document.getElementById('button2');
 
   const onClick = () => {
+    console.log('test');
     const singleSpan = webTracerWithZone.startSpan('files-series-info');
     context.with(trace.setSpan(context.active(), singleSpan), () => {
       getData(url).then((_data) => {
@@ -77,5 +78,5 @@ const prepareClickEvent = () => {
 
 window.addEventListener('load', prepareClickEvent);
 
-window.contextOriginal = context;
-window.traceOriginal = trace;
+window.contextDupe = context;
+window.traceDupe = trace;

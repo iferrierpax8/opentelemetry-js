@@ -27,6 +27,8 @@ const major = VERSION.split('.')[0];
 const GLOBAL_OPENTELEMETRY_API_KEY = Symbol.for(
   `opentelemetry.js.api.${major}`
 );
+const instanceId = new Date().getMilliseconds();
+let SCOPED_OPENTELEMETRY_API_KEY: symbol;
 
 const _global = _globalThis as OTelGlobal;
 
@@ -34,8 +36,28 @@ export function registerGlobal<Type extends keyof OTelGlobalAPI>(
   type: Type,
   instance: OTelGlobalAPI[Type],
   diag: DiagLogger,
-  allowOverride = false
+  allowOverride = true
 ): boolean {
+  if (allowOverride && !SCOPED_OPENTELEMETRY_API_KEY) {
+    SCOPED_OPENTELEMETRY_API_KEY = Symbol.for(
+      `opentelemetry.js.api.${major}.instance.${instanceId}`
+    );
+  }
+
+  if (allowOverride && SCOPED_OPENTELEMETRY_API_KEY) {
+    const scopedApi = (_global[SCOPED_OPENTELEMETRY_API_KEY] = _global[
+      SCOPED_OPENTELEMETRY_API_KEY
+    ] ?? {
+      version: VERSION,
+    });
+    
+    scopedApi[type] = instance;
+
+    diag.debug(
+      `@opentelemetry/api: Registered scoped instance ${instanceId} for ${type} v${VERSION}.`
+    );
+  }
+
   const api = (_global[GLOBAL_OPENTELEMETRY_API_KEY] = _global[
     GLOBAL_OPENTELEMETRY_API_KEY
   ] ?? {
@@ -91,6 +113,7 @@ export function unregisterGlobal(type: keyof OTelGlobalAPI, diag: DiagLogger) {
 
 type OTelGlobal = {
   [GLOBAL_OPENTELEMETRY_API_KEY]?: OTelGlobalAPI;
+  [key: symbol]: OTelGlobalAPI | undefined;
 };
 
 type OTelGlobalAPI = {

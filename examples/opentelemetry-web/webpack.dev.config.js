@@ -9,6 +9,7 @@ const common = {
   entry: {
     metrics: 'examples/metrics/index.js',
     fetch: 'examples/fetch/index.js',
+    'fetch-dupe': 'examples/fetch/dupe.js',
     'xml-http-request': 'examples/xml-http-request/index.js',
     fetchXhr: 'examples/fetchXhr/index.js',
     fetchXhrB3: 'examples/fetchXhrB3/index.js',
